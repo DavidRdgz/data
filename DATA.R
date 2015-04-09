@@ -69,3 +69,30 @@ set_feature_data.DATA <- function(...){
     object$feature.data <- tmp.list
     return(object)
 }
+
+plot_data <- function(...) UseMethod("plot_data")
+plot_data.DATA <- function(...){
+    args <- list(...)
+    object  <- args[["object"]]
+    type <- args[["type"]]
+    number <- args[["number"]]
+    cols <- args[["columns"]]
+   
+    if (type == "raw"){
+        data <- object$raw.data[[number]]
+    } else if (type == "feature"){
+        data <- object$feature.data[[number]]
+    }
+
+    data <- data.frame(data[,cols], list( time = 1:nrow(data)))
+    p <- ggplot(melt(data, id = "time"), aes(x=time, y = value, color = variable))
+    p <- p + geom_line()
+    p <- p + facet_grid(variable ~ . , scales = "free_y")
+    p <- p + theme_bw()
+    p <- p +  theme(axis.title.x = element_text(size = 12, vjust = .25), 
+                    strip.text.x = element_blank(),
+                    strip.background = element_blank(),
+                    strip.text.y = element_text(colour = "black", angle = 0, size = 15),
+                    legend.position="none")
+    return(p)
+}
