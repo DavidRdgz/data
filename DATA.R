@@ -5,6 +5,7 @@ DATA <- function(my.df = 0)
         data <- list(
             raw.data = my.df,
             feature.data = 0,
+            feature.matrix = 0,
             train.index = 0,
             test.index = 0
        )
@@ -70,6 +71,18 @@ set_feature_data.DATA <- function(...){
     return(object)
 }
 
+set_feature_matrix <- function(...) UseMethod("set_feature_matrix")
+set_feature_matrix.DATA  <- function(...){
+    args <- list(...)
+    object <- args[["object"]]
+
+    object$feature.matrix <-dfs_label(object$feature.data) 
+    return(object)
+}
+# ---------
+#
+# Plot time series with facets being different columns.
+
 plot_data <- function(...) UseMethod("plot_data")
 plot_data.DATA <- function(...){
     args <- list(...)
@@ -95,4 +108,34 @@ plot_data.DATA <- function(...){
                     strip.text.y = element_text(colour = "black", angle = 0, size = 15),
                     legend.position="none")
     return(p)
+}
+
+# ----------
+#
+# Box plot comparing gestures tdfs
+
+boxplot_data <- function(...) UseMethod("boxplot_data")
+boxplot_data.DATA <- function(...){
+    args <- list(...)
+    object  <- args[["object"]]
+    type <- args[["type"]]
+    cols <- args[["columns"]]
+    #file.name <- args[["file.name"]]
+
+    x <-melt.df(data = object$feature.matrix, columns = cols)
+    #png(file.name)
+    print("yay")
+    p <- ggplot(x, aes(factor(l), value))
+    p <- p + geom_boxplot() + facet_grid(variable ~ .)
+    p <- p + theme_bw()
+    p <- p +  theme(axis.title.x = element_text(size = 12, angle = 0, vjust = .25), 
+                    axis.text.x = element_text(angle = -45, vjust = .5),
+                    strip.text.x = element_blank(),
+                    strip.background = element_blank(),
+                    strip.text.y = element_text(colour = "black", angle = 0, size = 15),
+                    legend.position="none")
+    p <- p + labs(title = "4-TDFs By Signal Over Gestures",
+             x = "Gesture",
+             y = "Value")
+    p
 }

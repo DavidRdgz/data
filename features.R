@@ -1,3 +1,6 @@
+#!/usr/bin/Rscript
+library(reshape2)
+
 #fread file, truncate nRows
 df.clean <- function(my.df, nRows){
 	tmp <- read.csv(gsub("/","_",my.df))
@@ -56,7 +59,7 @@ signal.length <- function(vector){
 #                \/
 # [ feats1..4 featss2..4 ... feats17..4 ]
 
-window.to.feature <- function(window){
+window_to_feature <- function(window){
 
 	tmp.slope.sign.change <- apply(window, 2, n.sign.change)
 	tmp.zero.crossings <- apply(window, 2, n.zero.crossings)
@@ -86,16 +89,24 @@ feature_matrix <- function(df, nWindow, nSlide){
 
 	s.window <- seq(1, nrow(df)-nWindow, nSlide)
 	n.window <- length(s.window)
-	if (n.window > 0){
 
-		tmp <- window.to.feature(df[s.window[1]:(s.window[1]+nWindow),])
+    tmp <- c()
+    counter = 1
+    while(counter <= n.window){
+        tmp <- rbind(tmp,  window_to_feature(df[s.window[counter]:(s.window[counter]+nWindow),]))
+        counter = counter + 1
+    }
 
-		counter = 2
-		while( counter <= n.window){
-			tmp <- rbind(tmp,  window.to.feature(df[s.window[counter]:(s.window[counter]+nWindow),]))
-			counter = counter + 1
-		}
-	}
+#	if (n.window > 0){
+#
+#		tmp <- window_to_feature(df[s.window[1]:(s.window[1]+nWindow),])
+#
+#		counter = 2
+#		while( counter <= n.window){
+#			tmp <- rbind(tmp,  window_to_feature(df[s.window[counter]:(s.window[counter]+nWindow),]))
+#			counter = counter + 1
+#		}
+#	}
 	tmp
 }
 
@@ -106,35 +117,23 @@ feature_matrix <- function(df, nWindow, nSlide){
 #
 # [ df ] -> [ df | l ] 
 
-add.label <- function(df, label){
-	data.frame(df, list(l = rep(strsplit(label, "_")[[1]][5], nrow(df))))
+add_label <- function(df, label){
+	data.frame(df, list(l = rep(strsplit(label, "_")[[1]][1], nrow(df))))
 }
 
 # -------------------
 # 
-# [ df ] -> | df | l1 | 
-#			| df | l2 |
-#			     . 
-#			| df | lk |
+# [ (df,...,df) ] -> | df | l1 | 
+#			         | df | l2 |
+#			              . 
+#			         | df | lk |
 
-train.feature.matrix <- function(maxRows, nSlide, nWindow, dataPath){
-	setwd(dataPath)
-	dir_files <- list.files()
-	n.files <- length(dir_files) 
-	if (n.files > 0){
-
-		tmp <- df.to.feature.matrix(df.clean(dir_files[[1]], maxRows), nSlide, nWindow)	
-		tmp <- add.label(tmp, dir_files[[1]])
-		counter = 2
-		while( counter <= n.files) {
-			tmp1 <- df.to.feature.matrix(df.clean(dir_files[[counter]], maxRows), nSlide, nWindow)
-			tmp1 <- add.label(tmp1, dir_files[[counter]]) 
-			tmp <- rbind(tmp, tmp1)
-			counter = counter + 1
-		}
-	}
-	setwd("../")
-	tmp
+dfs_label <- function(list.dfs){
+    tmp <- c()
+    for(i in names(list.dfs)){
+        tmp <- rbind(tmp, add_label(list.dfs[[i]], i)) 
+    }
+    return(tmp)
 }
 
 # -------------------
@@ -147,7 +146,12 @@ train.feature.matrix <- function(maxRows, nSlide, nWindow, dataPath){
 re.label <- function(df){
 	labels <- colnames(df)
 	eqn <- as.formula(paste(paste(labels[1:length(labels)-1], collapse = "+"), " ~ l"))
-
 	dcast(df, eqn, function(x)  length(x))
 }
 
+
+melt.df <- function(...){
+    args <- list(...)
+    x <- args[["data"]]
+    melt(x, c("l"), colnames(x)[args[["columns"]]])
+}
