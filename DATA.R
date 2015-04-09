@@ -1,4 +1,5 @@
 source("features.R")
+library(ggplot2)
 
 DATA <- function(my.df = 0)
 {

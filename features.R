@@ -82,8 +82,8 @@ window_to_feature <- function(window){
 #
 # [ df ] -> | f1 |
 #           | f2 |
-#		    | .. |
-#			| fk |
+#           | .. |
+#           | fk |
 
 feature_matrix <- function(df, nWindow, nSlide){
 
@@ -96,17 +96,6 @@ feature_matrix <- function(df, nWindow, nSlide){
         tmp <- rbind(tmp,  window_to_feature(df[s.window[counter]:(s.window[counter]+nWindow),]))
         counter = counter + 1
     }
-
-#	if (n.window > 0){
-#
-#		tmp <- window_to_feature(df[s.window[1]:(s.window[1]+nWindow),])
-#
-#		counter = 2
-#		while( counter <= n.window){
-#			tmp <- rbind(tmp,  window_to_feature(df[s.window[counter]:(s.window[counter]+nWindow),]))
-#			counter = counter + 1
-#		}
-#	}
 	tmp
 }
 
@@ -124,9 +113,9 @@ add_label <- function(df, label){
 # -------------------
 # 
 # [ (df,...,df) ] -> | df | l1 | 
-#			         | df | l2 |
-#			              . 
-#			         | df | lk |
+#                    | df | l2 |
+#                         . 
+#                    | df | lk |
 
 dfs_label <- function(list.dfs){
     tmp <- c()
@@ -140,8 +129,8 @@ dfs_label <- function(list.dfs){
 #
 # [ df | l ] ->       l1 l2 . lk
 #                | df  0 1  . 0 |
-#				 |      .       |
-#				 | df  1 0  . 0 |
+#                |      .       |
+#                | df  1 0  . 0 |
 
 re.label <- function(df){
 	labels <- colnames(df)
